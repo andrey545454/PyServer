@@ -1,11 +1,25 @@
 import socket
 import threading
 import socketserver
+import time
+import queue
 
 
 class PyServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    """
+    Our server
+    """
+
     def __init__(self, server_address, RequestHandlerClass):
         super().__init__(server_address, RequestHandlerClass)
+
+        self.lasttime = time.time()
+
+    def service_actions(self):
+        # Если прошло 10 секунд, то отправляет сообщение
+        if time.time()-self.lasttime >= 10.0:
+            self.lasttime = time.time()
+            #TODO: Алгоритм отправки сообщений каждому пользователю
 
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -15,11 +29,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def setup(self):
         # Setup connection
         print("Подключение пользователя к серверу")
-        self.request.sendall("Привет, пользователь :)".encode())
 
     def handle(self):
         # Handle data
-        self.request.sendall("Ответ от сервера получен".encode())
+        self.request.send("Привет, пользователь :)".encode())
 
 
 if __name__ == "__main__":
