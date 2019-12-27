@@ -3,6 +3,7 @@ import threading
 import select
 import time
 
+from random import choice
 
 class PyServer():
     """
@@ -99,9 +100,12 @@ class PyServer():
         """
         threading.Timer(t, self.schedule_task, args=(t,)).start()
 
-        # Перебор всех подключений и отправка сообщений
+        # Выбираем рандомную фразу из файла
+        with open("messages.txt", encoding="UTF-8") as file:
+            msg = choice(file.readlines())
+        # Перебор всех подключений и отправка сообщения
         for addr in self.conns:
-            self.create_response(self.conns[addr], "Hello from server :)")
+            self.create_response(self.conns[addr], msg)
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):

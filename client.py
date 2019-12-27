@@ -9,4 +9,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         rdy_read, rdy_write, errors = select.select([s], [s], [], 5)
         if rdy_read:
-            print(s.recv(1024))
+            print(s.recv(1024).decode())
