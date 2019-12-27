@@ -14,8 +14,8 @@ class PyServer():
         self.ip = addr[0]
         self.port = addr[1]
 
-        # Таймер для отправки сообщений каждые 10 секунд
-        self.timer = time.time()
+        # Хранение всех подключений
+        self.conns = dict()
 
 
     def __enter__(self):
@@ -27,7 +27,6 @@ class PyServer():
         listen - Даёт возможность серверу принимать подключения.
 
         """
-
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.sock.bind((self.ip, self.port))
@@ -36,12 +35,18 @@ class PyServer():
 
     def run(self):
 
+        # Запуск потока запланированных задач (выполнение задач каждые t секунд)
+        self.schedule_task(10)
+
         while True:
             try:
                 # Пробуем получить новое сокет подключение
                 conn, addr = self.sock.accept()
                 # Если есть новое подключение, то обрабатываем его
                 if conn:
+                    # Добавляем новое подключение в словарь
+                    self.conns.update({addr: conn})
+                    # Выполняем это подключение в новом потоке
                     t = threading.Thread(target=self.client_thread, args=(conn, addr))
                     t.start()
             except:
@@ -65,11 +70,12 @@ class PyServer():
                     is_active = False
             if rdy_write:
                 try:
-                    self.create_msg(connection)
+                    self.create_response(connection)
                 except socket.error:
                     is_active = False
 
-
+        # Делаем уборку
+        del self.conns[address]
         print("Отключение", address)
         connection.close()
 
@@ -80,15 +86,23 @@ class PyServer():
         return conn.recv(bytes)
 
 
-    def create_msg(self, conn, enc='UTF-8'):
+    def create_response(self, conn, msg="", enc='UTF-8'):
         """
         Отправка данных в сокет
         """
-        if time.time()-self.timer >= 10:
-            msg = "Hello from server"
-            self.timer = time.time()
+        conn.sendall(msg.encode(enc))
 
-            conn.sendall(bytes(msg, encoding=enc))
+
+    def schedule_task(self, t):
+        """
+        Обработка запланированных задач
+        """
+        threading.Timer(t, self.schedule_task, args=(t,)).start()
+
+        # Перебор всех подключений и отправка сообщений
+        for addr in self.conns:
+            self.create_response(self.conns[addr], "Hello from server :)")
+
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
