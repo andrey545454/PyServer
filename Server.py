@@ -1,6 +1,5 @@
 import socket
 import threading
-import socketserver
 import select
 import time
 
@@ -15,8 +14,8 @@ class PyServer():
         self.ip = addr[0]
         self.port = addr[1]
 
-        # Потоки
-        self._threads = []
+        # Таймер для отправки сообщений каждые 10 секунд
+        self.timer = time.time()
 
 
     def __enter__(self):
@@ -44,7 +43,6 @@ class PyServer():
                 # Если есть новое подключение, то обрабатываем его
                 if conn:
                     t = threading.Thread(target=self.client_thread, args=(conn, addr))
-                    self._threads.append(t)
                     t.start()
             except:
                 pass
@@ -58,16 +56,39 @@ class PyServer():
         is_active = True
         while is_active:
             # Проверяем сокет на доступность к чтению/записи и на ошибки
-            rdy_read, rdy_write, sock_error = select.select([connection],[connection], [], 5)
+            rdy_read, rdy_write, errors = select.select([connection],[connection], [], 5)
 
             if rdy_read:
                 try:
-                    data = connection.recv(1024)
+                    data = self.get_data(connection)
+                except socket.error:
+                    is_active = False
+            if rdy_write:
+                try:
+                    self.create_msg(connection)
                 except socket.error:
                     is_active = False
 
+
         print("Отключение", address)
         connection.close()
+
+    def get_data(self, conn, bytes=1024):
+        """
+        Получение даты из сокета
+        """
+        return conn.recv(bytes)
+
+
+    def create_msg(self, conn, enc='UTF-8'):
+        """
+        Отправка данных в сокет
+        """
+        if time.time()-self.timer >= 10:
+            msg = "Hello from server"
+            self.timer = time.time()
+
+            conn.sendall(bytes(msg, encoding=enc))
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
