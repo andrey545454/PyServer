@@ -2,6 +2,7 @@ import socket
 import threading
 import select
 import time
+import configparser
 
 from random import choice
 
@@ -116,7 +117,10 @@ class PyServer():
 
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 50007
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    HOST, PORT = config["Server"]["server_ip"], int(config["Server"]["server_port"])
 
     # Create the server, binding to localhost on port 50007
     server = PyServer((HOST, PORT))
