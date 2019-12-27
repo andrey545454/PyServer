@@ -1,9 +1,8 @@
 import socket
 import threading
 import socketserver
-import selectors
+import select
 import time
-import queue
 
 
 class PyServer():
@@ -26,7 +25,7 @@ class PyServer():
 
         bind - Привязка сокета к адресу
         setblocking - Установка блокирующего/неблокирующего режима сокета
-        listen - Макс. количество подключений
+        listen - Даёт возможность серверу принимать подключения.
 
         """
 
@@ -34,7 +33,7 @@ class PyServer():
 
         self.sock.bind((self.ip, self.port))
         self.sock.setblocking(False)
-        self.sock.listen(10)
+        self.sock.listen()
 
     def run(self):
 
@@ -54,12 +53,21 @@ class PyServer():
         """
         Потоки для клиентов, подключённых к серверу
         """
+        print("Новое подключение", address)
+
         is_active = True
         while is_active:
-            pass
+            # Проверяем сокет на доступность к чтению/записи и на ошибки
+            rdy_read, rdy_write, sock_error = select.select([connection],[connection], [], 5)
 
+            if rdy_read:
+                try:
+                    data = connection.recv(1024)
+                except socket.error:
+                    is_active = False
+
+        print("Отключение", address)
         connection.close()
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """

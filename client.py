@@ -9,4 +9,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         msg = b"hi"
         s.sendall(msg)
-        sleep(2)
