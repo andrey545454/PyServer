@@ -1,4 +1,4 @@
-<h1>Python server</h1>
+<h1>Python client</h1>
 
-Server app on Python 3.8
+Client app with News API on Python 3.8
 
