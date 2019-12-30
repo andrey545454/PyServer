@@ -12,6 +12,8 @@ if __name__ == "__main__":
     config.read("config.ini")
     api_key = config["news_api"]["api_key"]
 
+    key_word = input()
+
     news_api_client = NewsApiClient(api_key=api_key)
 
     # Получаем последние новости из категории business
@@ -31,9 +33,13 @@ if __name__ == "__main__":
         datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ").day == datetime.datetime.today().day,
         top_ru_news["articles"]+top_us_news["articles"]
     ))
+
     today_business_news.sort(
         key=lambda article:
-        datetime.datetime.strptime(article["publishedAt"], "%Y-%m-%dT%H:%M:%SZ")
+            article["title"].lower().count(key_word.lower()) if article["title"] is not None else 0
+            +
+            article["content"].lower().count(key_word.lower()) if article["content"] is not None else 0,
+        reverse=True
     )
     # Запись в файл
     with open("news.json", 'w') as file:
