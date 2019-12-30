@@ -31,6 +31,10 @@ if __name__ == "__main__":
         datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ").day == datetime.datetime.today().day,
         top_ru_news["articles"]+top_us_news["articles"]
     ))
+    today_business_news.sort(
+        key=lambda article:
+        datetime.datetime.strptime(article["publishedAt"], "%Y-%m-%dT%H:%M:%SZ")
+    )
     # Запись в файл
     with open("news.json", 'w') as file:
         json.dump(today_business_news, file, indent=2)
