@@ -15,7 +15,13 @@ if __name__ == "__main__":
     news_api_client = NewsApiClient(api_key=api_key)
 
     # Получаем последние новости из категории business
-    top_news = news_api_client.get_top_headlines(
+    top_ru_news = news_api_client.get_top_headlines(
+        country="ru",
+        category="business",
+        page_size=100
+    )
+    top_us_news = news_api_client.get_top_headlines(
+        country="us",
         category="business",
         page_size=100
     )
@@ -23,7 +29,7 @@ if __name__ == "__main__":
     today_business_news = list(filter(
         lambda article:
         datetime.datetime.strptime(article["publishedAt"],"%Y-%m-%dT%H:%M:%SZ").day == datetime.datetime.today().day,
-        top_news["articles"]
+        top_ru_news["articles"]+top_us_news["articles"]
     ))
     # Запись в файл
     with open("news.json", 'w') as file:
