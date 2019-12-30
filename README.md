@@ -2,3 +2,6 @@
 
 Client app with News API on Python 3.8
 
+<h2>Используемые библиотеки</h2>
+* requests
+* newsapi-python
